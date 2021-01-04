@@ -32,4 +32,5 @@ def send_currency(message):
     bot.send_message(message.chat.id, answer)
 
 
-bot.polling()
+if __name__ == '__main__':
+    bot.polling()
