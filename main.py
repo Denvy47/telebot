@@ -4,13 +4,17 @@ import os
 import requests
 import telebot
 from flask import Flask, request
+from telebot.types import InlineKeyboardButton
 
 TOKEN = '1565130854:AAECOdx2Xg-SAPqHgbahTlRthh2_waHnB1s'
 bot = telebot.TeleBot(TOKEN)
 
-keyboard = telebot.types.ReplyKeyboardMarkup()
-keyboard.row('BTC/USD', 'BTC/RUB')
-
+markup = telebot.types.ReplyKeyboardMarkup()
+markup.row_width = 2
+markup.add(
+    InlineKeyboardButton('BTC/USD', callback_data='btc/usd'),
+    InlineKeyboardButton('BTC/RUB', callback_data='btc/rub')
+)
 
 server = Flask(__name__)
 
@@ -25,15 +29,15 @@ def get_btc_price(currency: str):
 @bot.message_handler(commands=['start'])
 def start_message(message):
     bot.send_message(message.chat.id, 'Привет! Ожидаю команду.',
-                     reply_markup=keyboard)
+                     reply_markup=markup)
 
 
 @bot.message_handler(content_types=['text'])
 def send_currency(message):
     answer = 'Wrong input :('
-    if message.text.upper() == 'BTC/USD':
+    if message.text.lower() == 'btc/usd':
         answer = get_btc_price('usd')
-    if message.text.upper() == 'BTC/RUB':
+    if message.text.lower() == 'btc/rub':
         answer = get_btc_price('rub')
     bot.send_message(message.chat.id, answer)
 
