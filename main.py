@@ -6,23 +6,24 @@ import telebot
 from flask import Flask, request
 from telebot.types import InlineKeyboardButton
 
-TOKEN = '1565130854:AAECOdx2Xg-SAPqHgbahTlRthh2_waHnB1s'
-bot = telebot.TeleBot(TOKEN)
+_TOKEN = os.environ.get('TOKEN')
+_USD = 'usd'
+_RUB = 'rub'
+
+bot = telebot.TeleBot(_TOKEN)
 
 markup = telebot.types.ReplyKeyboardMarkup()
 markup.row_width = 2
 markup.add(
-    InlineKeyboardButton('BTC/USD', callback_data='btc/usd'),
-    InlineKeyboardButton('BTC/RUB', callback_data='btc/rub')
+    InlineKeyboardButton('BTC/USD', callback_data=_USD),
+    InlineKeyboardButton('BTC/RUB', callback_data=_RUB)
 )
 
 server = Flask(__name__)
 
 
 def get_btc_price(currency: str):
-    resp = requests.get(
-        f'https://blockchain.info/ticker'
-    )
+    resp = requests.get('https://blockchain.info/ticker')
     return json.loads(resp.text).get(currency.upper()).get('last')
 
 
@@ -35,14 +36,13 @@ def start_message(message):
 @bot.message_handler(content_types=['text'])
 def send_currency(message):
     answer = 'Wrong input :('
-    if message.text.lower() == 'btc/usd':
-        answer = get_btc_price('usd')
-    if message.text.lower() == 'btc/rub':
-        answer = get_btc_price('rub')
+    msg = message.text.lower()
+    if msg in [_USD, _RUB]:
+        answer = get_btc_price(msg)
     bot.send_message(message.chat.id, answer)
 
 
-@server.route('/' + TOKEN, methods=['POST'])
+@server.route('/' + _TOKEN, methods=['POST'])
 def get_message():
     bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
     return "!", 200
@@ -51,7 +51,7 @@ def get_message():
 @server.route("/")
 def webhook():
     bot.remove_webhook()
-    bot.set_webhook(url='https://denvy-telebot.herokuapp.com/' + TOKEN)
+    bot.set_webhook(url='https://denvy-telebot.herokuapp.com/' + _TOKEN)
     return "!", 200
 
 
