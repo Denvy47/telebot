@@ -34,8 +34,8 @@ def start_message(message):
 
 
 @bot.message_handler(content_types=['text'])
-def send_currency(message):
-    answer = 'Wrong input :('
+def send_price(message):
+    answer = 'Неверная команда..Попробуй еще разок!'
     msg = message.text.lower()
     if msg in [_USD, _RUB]:
         answer = get_btc_price(msg)
