@@ -7,16 +7,16 @@ from flask import Flask, request
 from telebot.types import InlineKeyboardButton
 
 _TOKEN = os.environ.get('TOKEN')
-_USD = 'usd'
-_RUB = 'rub'
+_USD = 'BTC/USD'
+_RUB = 'BTC/RUB'
 
 bot = telebot.TeleBot(_TOKEN)
 
 markup = telebot.types.ReplyKeyboardMarkup()
 markup.row_width = 2
 markup.add(
-    InlineKeyboardButton('BTC/USD', callback_data=_USD),
-    InlineKeyboardButton('BTC/RUB', callback_data=_RUB)
+    InlineKeyboardButton(_USD),
+    InlineKeyboardButton(_RUB)
 )
 
 server = Flask(__name__)
@@ -24,7 +24,7 @@ server = Flask(__name__)
 
 def get_btc_price(currency: str):
     resp = requests.get('https://blockchain.info/ticker')
-    return json.loads(resp.text).get(currency.upper()).get('last')
+    return json.loads(resp.text).get(currency).get('last')
 
 
 @bot.message_handler(commands=['start'])
@@ -36,9 +36,9 @@ def start_message(message):
 @bot.message_handler(content_types=['text'])
 def send_price(message):
     answer = 'Неверная команда..Попробуй еще разок!'
-    msg = message.text.lower()
+    msg = message.text.upper()
     if msg in [_USD, _RUB]:
-        answer = get_btc_price(msg)
+        answer = get_btc_price(msg.split('/')[1])
     bot.send_message(message.chat.id, answer)
 
 
