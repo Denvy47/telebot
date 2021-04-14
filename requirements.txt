@@ -1,2 +1,1 @@
-flask==1.1.2
 pytelegrambotapi==3.7.4
